@@ -1,28 +1,60 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <options-panel class="top-right" />
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import OptionsPanel from './components/OptionsPanel.vue'
 
 export default {
-  name: "App",
   components: {
-    HelloWorld
+    OptionsPanel
   }
-};
+}
 </script>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+html,
+body,
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  text-shadow: 1px 1px 1px #202020;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  border: none;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #252525;
+}
+</style>
+<style lang="scss" scoped>
+.three-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  position: absolute;
+  top: 0%;
+  left: 0%;
+}
+
+.top-left {
+  position: absolute;
+  left: 30%;
+  top: 30%;
+}
+
+.top-right {
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 </style>
