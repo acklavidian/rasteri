@@ -1,15 +1,18 @@
 <template>
   <div id="app">
     <options-panel class="top-right" />
+    <tool-panel class="top-left" />a
   </div>
 </template>
 
 <script>
 import OptionsPanel from './components/OptionsPanel.vue'
+import ToolPanel from './components/ToolPanel.vue'
 
 export default {
   components: {
-    OptionsPanel
+    OptionsPanel,
+    ToolPanel
   }
 }
 </script>
@@ -48,8 +51,8 @@ body,
 
 .top-left {
   position: absolute;
-  left: 30%;
-  top: 30%;
+  left: 0;
+  top: 0;
 }
 
 .top-right {

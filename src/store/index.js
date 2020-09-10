@@ -9,4 +9,3 @@ export default new Vuex.Store({
     art
   }
 })
-

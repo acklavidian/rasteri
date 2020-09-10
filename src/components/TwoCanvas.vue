@@ -7,7 +7,7 @@ import { createNamespacedHelpers } from 'vuex'
 import * as Rastiri from '../lib'
 import { createAccessors } from '../store/utils'
 
-const { mapState  } = createNamespacedHelpers('art')
+const { mapState } = createNamespacedHelpers('art')
 const accessor = createAccessors('art')
 
 export default {
@@ -43,7 +43,7 @@ export default {
   watch: {
     zoom() {
       this.$forceUpdate()
-    },
+    }
 
     // mouse() {
     //   this.$forceUpdate()

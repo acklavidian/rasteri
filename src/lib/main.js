@@ -1,61 +1,55 @@
-
 /* eslint-disable */
 import * as THREE from 'three'
 import store from '../store'
 import { MapControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { shape } from './PolygonGeometry'
 
-var scene = new THREE.Scene()
-var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-var renderer = new THREE.WebGLRenderer()
-var geometry = new THREE.BoxGeometry()
-var material = new THREE.MeshNormalMaterial()
-var cube = new THREE.Mesh( geometry, material )
+
+var geometry = new THREE.CircleGeometry()
+var material = new THREE.MeshBasicMaterial({ wireframe: true, color: 0x999999 })
+var cursor3D = new THREE.Mesh( geometry, material )
+var grid = new THREE.GridHelper(10, store.state.art.resolution.x, 0x00ff00)
+var scene = store.state.art.scene
+var camera = store.getters['art/camera']
+var renderer = store.state.art.renderer
 var controls = new MapControls(camera, renderer.domElement)
-var grid = new THREE.GridHelper()
+
 
 store.subscribeAction(update)
-scene.add( cube )
-scene.add( grid )
-scene.add(shape)
+// scene.add(cursor3D)
+
+// scene.add(grid)
 camera.position.y = 5
 camera.lookAt(grid)
 renderer.setSize(window.innerWidth, window.innerHeight)
-controls.enableRotate = false
+controls.enableRotate = true
 document.body.prepend(renderer.domElement)
-window.addEventListener('resize', onWindowResize)
 
-function onWindowResize() {
-    var width = window.innerWidth;
-    var height = window.innerHeight;
+cursor3D.rotation.x = -1.5
 
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
+export function onWindowResize() {
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 
 export function update() {
-    var targetZ = 0
-    var mouse = store.state.art.mouse
-    var vector = new THREE.Vector3( 
-        ( mouse.x / window.innerWidth ) * 2 - 1,
-        -( mouse.y / window.innerHeight ) * 2 + 1,
-        10.5
-        
-    ).unproject(camera)
-    vector.sub(camera.position).normalize()
-    var distance = (targetZ - camera.position.y) / vector.y
+    camera = store.getters['art/camera']
+    cursor3D.position.copy(store.getters['art/mouse3D']())
+
+    // group.rotation.x += 0.01
+    // group.rotation.y += 0.01
+    cursor3D.position.x = Math.round(cursor3D.position.x)
+    cursor3D.position.y = Math.round(cursor3D.position.y)
+    cursor3D.position.z = Math.round(cursor3D.position.z)
+
     controls.update()
-    shape.rotation.x += 0.01
-    shape.rotation.y += 0.01
-    cube.position
-        .copy(camera.position)
-        .add(vector.multiplyScalar(distance))
-    cube.position.x = Math.round(cube.position.x)
-    cube.position.y = Math.round(cube.position.y)
-    cube.position.z = Math.round(cube.position.z)
     renderer.render(scene, camera)
 }
+update()
 /* eslint-enable */

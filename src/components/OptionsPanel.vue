@@ -5,18 +5,23 @@
       <div class="combo-input">
         <label>Size X<input v-model="width"/></label>
         <hr />
-        <div v-if="!isLocked">
+        <div v-if="!isRatioLocked">
           <label>Size Y<input v-model="height"/></label>
         </div>
       </div>
       <div class="combo-input">
-        <label>Ratio Lock<input v-model="isLocked" type="checkbox"/></label>
+        <label
+          >Ratio Lock<input v-model="isRatioLocked" type="checkbox"
+        /></label>
+      </div>
+      <div class="combo-input">
+        <label>Ortho: <input v-model="isOrtho" type="checkbox"/></label>
       </div>
     </div>
     <div>
       <div class="row-header">Zoom:</div>
       <div class="combo-input">
-        <label> Zoom<input v-model="scale"/></label>
+        <label> Zoom<input v-model="zoom"/></label>
       </div>
     </div>
     <div class="row-footer">
@@ -25,8 +30,10 @@
   </div>
 </template>
 <script>
+import { createAccessors } from '../store/utils'
 import { createNamespacedHelpers } from 'vuex'
 const { mapState, mapActions } = createNamespacedHelpers('art')
+const accessors = createAccessors('art')
 
 export default {
   props: {
@@ -39,30 +46,8 @@ export default {
   },
 
   computed: {
-    ...mapState(['resolution', 'zoom', 'isRatioLocked', 'offset']),
-    ...mapState({
-      getMouse: 'mouse'
-    }),
-
-    scale: {
-      get() {
-        return this.zoom
-      },
-
-      set(value) {
-        this.changeZoom(value)
-      }
-    },
-
-    isLocked: {
-      get() {
-        return this.isRatioLocked
-      },
-
-      set(value) {
-        this.changeIsRatioLocked(value)
-      }
-    },
+    ...mapState(['resolution', 'offset']),
+    ...accessors(['zoom', 'isRatioLocked', 'isOrtho', 'mouse']),
 
     height: {
       get() {
@@ -73,15 +58,7 @@ export default {
         this.changeResolution({ x: this.width, y: height })
       }
     },
-    mouse: {
-      get() {
-        return this.getMouse
-      },
 
-      set(value) {
-        return this.changeMouse(value)
-      }
-    },
     width: {
       get() {
         return this.resolution.x
@@ -95,10 +72,7 @@ export default {
 
   methods: {
     ...mapActions({
-      changeResolution: 'resolution',
-      changeZoom: 'zoom',
-      changeIsRatioLocked: 'isRatioLocked',
-      changeMouse: 'mouse'
+      changeResolution: 'resolution'
     })
   }
 }
