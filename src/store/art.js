@@ -31,6 +31,20 @@ export default {
     clicked: {
       intersects: [],
       position3D: new Vector3()
+    },
+
+    keydown: {
+      code: null,
+      location: null,
+      key: null,
+      which: null
+    },
+
+    keyup: {
+      code: null,
+      location: null,
+      key: null,
+      which: null
     }
   },
 
@@ -48,6 +62,14 @@ export default {
       const { x, y, z } = position3D
       state.clicked.position3D = new Vector3(x, y, z)
       state.clicked.intersects = [...intersects]
+    },
+
+    keyup(state, { code, location, key, which }) {
+      state.keyup = { code, location, key, which }
+    },
+
+    keydown(state, { code, location, key, which }) {
+      state.keydown = { code, location, key, which }
     },
 
     zoom(state, z = 0) {
@@ -120,6 +142,14 @@ export default {
 
     offset({ commit }, { x, y }) {
       commit('offset', { x, y })
+    },
+
+    keydown({ commit }, { code, key, which, location }) {
+      commit('keydown', { code, key, which, location })
+    },
+
+    keyup({ commit }, { code, key, which, location }) {
+      commit('keyup', { code, key, which, location })
     },
 
     isRatioLocked({ state, commit }, value) {

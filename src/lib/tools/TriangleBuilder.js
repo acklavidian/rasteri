@@ -8,6 +8,7 @@ import {
   LineBasicMaterial,
   MeshNormalMaterial,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   Mesh,
   Line,
   Group,
@@ -32,6 +33,7 @@ export default class TriangleBuilder extends ToolBuilder {
   selected = null
   line = null
   face = null
+
   constructor() {
     super()
 
@@ -58,14 +60,15 @@ export default class TriangleBuilder extends ToolBuilder {
   onClick() {
     const mouse3D = store.getters['art/mouse3D']()
     const [{ object: closest } = {}] = this.intersections
+    // debugger // eslint-disable-line
 
     if (this.isComplete) {
       if (closest !== this.selected) {
         this.selected = closest
-        closest.material.color.set(0x0000ff)
+        closest?.material.color.set(0x0000ff)
       } else {
         this.selected = null
-        closest.material.color.set(0x00ffff)
+        closest?.material.color.set(0x00ffff)
       }
     } else {
       this.addCoordinate(mouse3D)
@@ -77,7 +80,7 @@ export default class TriangleBuilder extends ToolBuilder {
   }
 
   computeFace([one, two, three]) {
-    const material = new MeshBasicMaterial({ color: 0x0ff000 })
+    const material = new MeshStandardMaterial({ color: 0x0ff000 })
     const geometry = new Geometry().setFromPoints([one, two, three])
 
     if (this.face?.geometry) {
@@ -117,7 +120,10 @@ export default class TriangleBuilder extends ToolBuilder {
 
   onMouseMove() {
     if (this.selected) {
-      this.selected.position.copy(store.getters['art/mouse3D']())
+      const { y } = this.selected.position
+      const { x, z } = store.getters['art/mouse3D']()
+      const position = new Vector3(Math.round(x), Math.round(y), Math.round(z))
+      this.selected.position.copy(position)
     }
   }
 
@@ -136,12 +142,20 @@ export default class TriangleBuilder extends ToolBuilder {
       this.helpers.children,
       true
     )
-
-    // console.log('scene', scene)
-    // console.log('raycaster', raycaster)
-    // console.log('camera', camera)
-    // console.log('mouse', mouse.normalize())
-    // console.log('intersect', intersections)
     return intersections
+  }
+
+  onKeyDown(state) {
+    const { key } = state.art.keydown
+    const [{ object = null } = {}] = this.intersections
+
+    console.log('keydown', state.art.keydown)
+    if (key === 'u' && object) {
+      object.position.y += 1
+    }
+
+    if (key === 'd' && object) {
+      object.position.y -= 1
+    }
   }
 }

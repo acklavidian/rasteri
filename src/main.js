@@ -3,6 +3,10 @@ import Vue from 'vue'
 import App from './App.vue'
 import store from './store'
 import * as Rasteri from './lib'
+import debounce from 'lodash.debounce'
+
+const dispatch = store.dispatch
+
 Vue.config.productionTip = false
 
 new Vue({
@@ -11,16 +15,19 @@ new Vue({
 }).$mount('#app')
 
 window.addEventListener('mousemove', e =>
-  store.dispatch('art/mouse', { x: e.clientX, y: e.clientY })
+  dispatch('art/mouse', { x: e.clientX, y: e.clientY })
 )
 window.addEventListener('resize', Rasteri.onWindowResize)
-window.addEventListener('keyup', Rasteri.update)
-window.addEventListener('click', () => store.dispatch('art/clicked'))
+window.addEventListener('keydown', event => dispatch('art/keydown', event))
+window.addEventListener('keyup', event => dispatch('art/keyup', event))
+window.addEventListener('click', () => dispatch('art/clicked'))
 window.addEventListener(
   'wheel',
   () => {
     const zoom = store.state.art.zoom
-    store.dispatch('art/zoom', event.deltaY < 0 ? zoom + 10 : zoom - 10)
+    dispatch('art/zoom', event.deltaY < 0 ? zoom + 10 : zoom - 10)
   },
   true
 )
+store.subscribeAction(debounce(Rasteri.update, 1000 / 30, { maxWait: 35 }))
+setInterval(Rasteri.update, 1000)
