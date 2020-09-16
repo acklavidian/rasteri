@@ -32,6 +32,7 @@ controls.mouseButtons.RIGHT = THREE.MOUSE.PAN
 // scene.add(cursor3D)
 scene.add(grid)
 camera.position.y = 5
+grid.position.y = -0.01
 camera.lookAt(grid)
 renderer.setSize(window.innerWidth, window.innerHeight)
 controls.enableRotate = true

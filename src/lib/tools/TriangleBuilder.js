@@ -19,7 +19,9 @@ import {
   Scene,
   CircleGeometry,
   VectorKeyframeTrack,
-  LineLoop
+  LineLoop,
+  Side,
+  DoubleSide
 } from 'three'
 import ToolBuilder from './ToolBuilder'
 import store from '../../store'
@@ -29,14 +31,13 @@ export default class TriangleBuilder extends ToolBuilder {
   #coordinates = []
   helpers = new Group()
   edges = new Group()
-  isEditable = false
+  isEditable = true
   selected = null
   line = null
   face = null
 
   constructor() {
     super()
-
     this.add(this.helpers)
     this.add(this.edges)
   }
@@ -59,18 +60,42 @@ export default class TriangleBuilder extends ToolBuilder {
 
   onClick() {
     const mouse3D = store.getters['art/mouse3D']()
-    const [{ object: closest } = {}] = this.intersections
+    const a = this.intersections
     // debugger // eslint-disable-line
+    /* to-do:
+     * break this up. put conditions in functions.
+     * reorganize responsibilities and order.
+     * re-evaluate conditional "flow" <->___<-> . try to reduce complexity.
+     * remove #coordinate, replace with geometry.vertices temmplate
+     */
+    const clickedHelper = this.intersections.find(i => {
+      const j = this.helpers.children.includes(i.object)
+      console.log('intersection of:', i.object, 'in', this.helpers.children, j)
+      return j
+    })?.object
+    const [{ object: clicked } = {}] = a
+    const clickedFace = this.intersections.find(i => i.object === this.face)
+    console.log('clicked helper out:', clickedHelper)
+    console.log('clicked face out:', clickedFace)
 
-    if (this.isComplete) {
-      if (closest !== this.selected) {
-        this.selected = closest
-        closest?.material.color.set(0x0000ff)
+    if (clickedFace) {
+      console.log('clicked face')
+      this.isEditable = !this.isEditable
+      this.helpers.visible = !this.helpers.visible
+      this.edges.visible = !this.edges.visible
+      this.selected = null
+    } else if (this.isComplete && this.isEditable) {
+      if (clickedHelper) {
+        console.log('clicked helper: ', clickedHelper)
+        this.selected = this.selected === clickedHelper ? null : clickedHelper
+        clickedHelper?.material.color.set(
+          this.selected === null ? 0x003399 : 0x8800ff
+        )
       } else {
         this.selected = null
-        closest?.material.color.set(0x00ffff)
+        clicked?.material.color.set(0x00ffff)
       }
-    } else {
+    } else if (this.#coordinates.length < 3) {
       this.addCoordinate(mouse3D)
     }
   }
@@ -80,15 +105,19 @@ export default class TriangleBuilder extends ToolBuilder {
   }
 
   computeFace([one, two, three]) {
-    const material = new MeshStandardMaterial({ color: 0x0ff000 })
+    const material = new MeshStandardMaterial({
+      color: 0x0ff000,
+      side: DoubleSide
+    })
     const geometry = new Geometry().setFromPoints([one, two, three])
+    const normal = new Vector3(0, 0, 0)
 
     if (this.face?.geometry) {
       this.face.geometry.dispose()
       this.remove(this.face)
     }
 
-    geometry.faces.push(new Face3(0, 1, 2))
+    geometry.faces.push(new Face3(0, 1, 2, normal))
     this.face = new Mesh(geometry, material)
     geometry.computeFaceNormals()
     this.add(this.face)
@@ -100,19 +129,22 @@ export default class TriangleBuilder extends ToolBuilder {
 
     if (this.line?.geometry) {
       this.line.geometry.dispose()
-      this.remove(this.line)
+      this.edges.remove(this.line)
     }
 
     this.line = new LineLoop(geometry, material)
-    this.add(this.line)
+    this.line.renderOrder = 1
+    this.line.material.depthTest = false
+    this.edges.add(this.line)
   }
 
   addCoordinate({ x, y, z }) {
     const geometry = new CircleGeometry(0.5, 20)
     const material = new MeshBasicMaterial({ color: 0x00fffff })
     const marker = new Mesh(geometry, material)
-
-    marker.position.copy(new Vector3(x, 0, z))
+    material.depthTest = false
+    marker.renderOrder = 2
+    marker.position.copy(new Vector3(Math.round(x), 0, Math.round(z)))
     marker.lookAt(new Vector3(x, 1, z))
     this.helpers.add(marker)
     this.#coordinates.push(marker)
@@ -138,10 +170,7 @@ export default class TriangleBuilder extends ToolBuilder {
     )
 
     raycaster.setFromCamera(vector, camera)
-    const intersections = raycaster.intersectObjects(
-      this.helpers.children,
-      true
-    )
+    const intersections = raycaster.intersectObjects(this.children, true)
     return intersections
   }
 
