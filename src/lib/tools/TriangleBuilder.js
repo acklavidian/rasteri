@@ -21,7 +21,8 @@ import {
   VectorKeyframeTrack,
   LineLoop,
   Side,
-  DoubleSide
+  DoubleSide,
+  Color
 } from 'three'
 import ToolBuilder from './ToolBuilder'
 import store from '../../store'
@@ -35,15 +36,18 @@ export default class TriangleBuilder extends ToolBuilder {
   selected = null
   line = null
   face = null
+  color = new Color().copy(store.state.brush.color)
 
   constructor() {
     super()
+    store.dispatch('brush/isLocked', true)
     this.add(this.helpers)
     this.add(this.edges)
   }
 
   update() {
     const [one, two, three] = this.helpers.children.map(i => {
+      
       if (this.selected === i) {
         i.material.color.set(0x00ffff)
       } else {
@@ -55,6 +59,7 @@ export default class TriangleBuilder extends ToolBuilder {
     if (this.isComplete) {
       this.computeEdges([one, two, three])
       this.computeFace([one, two, three])
+      store.dispatch('brush/isLocked', false)
     }
   }
 
@@ -75,25 +80,26 @@ export default class TriangleBuilder extends ToolBuilder {
     })?.object
     const [{ object: clicked } = {}] = a
     const clickedFace = this.intersections.find(i => i.object === this.face)
-    console.log('clicked helper out:', clickedHelper)
-    console.log('clicked face out:', clickedFace)
-
     if (clickedFace) {
       console.log('clicked face')
       this.isEditable = !this.isEditable
       this.helpers.visible = !this.helpers.visible
       this.edges.visible = !this.edges.visible
       this.selected = null
+      store.dispatch('brush/color', this.color)
     } else if (this.isComplete && this.isEditable) {
       if (clickedHelper) {
         console.log('clicked helper: ', clickedHelper)
         this.selected = this.selected === clickedHelper ? null : clickedHelper
+
         clickedHelper?.material.color.set(
           this.selected === null ? 0x003399 : 0x8800ff
         )
       } else {
+        //clicked off
         this.selected = null
         clicked?.material.color.set(0x00ffff)
+        console.log('clicked off')
       }
     } else if (this.#coordinates.length < 3) {
       this.addCoordinate(mouse3D)
@@ -106,7 +112,7 @@ export default class TriangleBuilder extends ToolBuilder {
 
   computeFace([one, two, three]) {
     const material = new MeshStandardMaterial({
-      color: 0x0ff000,
+      color: this.color,
       side: DoubleSide
     })
     const geometry = new Geometry().setFromPoints([one, two, three])
@@ -159,32 +165,24 @@ export default class TriangleBuilder extends ToolBuilder {
     }
   }
 
-  get intersections() {
-    const camera = store.getters['art/camera']
-    const raycaster = store.state.art.raycaster
-    const mouse = store.state.art.mouse
-
-    const vector = new Vector2(
-      (mouse.x / window.innerWidth) * 2 - 1,
-      -(mouse.y / window.innerHeight) * 2 + 1
-    )
-
-    raycaster.setFromCamera(vector, camera)
-    const intersections = raycaster.intersectObjects(this.children, true)
-    return intersections
-  }
-
   onKeyDown(state) {
     const { key } = state.art.keydown
     const [{ object = null } = {}] = this.intersections
 
     console.log('keydown', state.art.keydown)
-    if (key === 'u' && object) {
-      object.position.y += 1
-    }
 
-    if (key === 'd' && object) {
-      object.position.y -= 1
+    if (this.isEditable) {
+      if (key === 'u' && this.selected) {
+        this.selected.position.y += 1
+      }
+
+      if (key === 'd' && this.selected) {
+        this.selected.position.y -= 1
+      }
+
+      if (key === 'Enter' && this.selected) {
+        this.selected = null
+      }
     }
   }
 }

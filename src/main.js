@@ -15,16 +15,16 @@ new Vue({
 }).$mount('#app')
 
 window.addEventListener('mousemove', e =>
-  dispatch('art/mouse', { x: e.clientX, y: e.clientY })
+  dispatch('event/mouse', { x: e.clientX, y: e.clientY })
 )
 window.addEventListener('resize', Rasteri.onWindowResize)
-window.addEventListener('keydown', event => dispatch('art/keydown', event))
-window.addEventListener('keyup', event => dispatch('art/keyup', event))
-window.addEventListener('click', () => dispatch('art/clicked'))
+window.addEventListener('keydown', event => dispatch('event/keydown', event))
+window.addEventListener('keyup', event => dispatch('event/keyup', event))
+window.addEventListener('click', () => dispatch('event/clicked'))
 window.addEventListener(
   'wheel',
-  () => {
-    const zoom = store.state.art.zoom
+  event => {
+    const zoom = store.state.event.zoom
     dispatch('art/zoom', event.deltaY < 0 ? zoom + 10 : zoom - 10)
   },
   true
