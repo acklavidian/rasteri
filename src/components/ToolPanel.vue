@@ -34,7 +34,9 @@ export default {
     },
 
     buildPoint() {
-      this.$nextTick(() => this.scene.add(new PointBuilder()))
+      const point = new PointBuilder()
+      point.subscribe()
+      this.scene.add(point)
     }
   },
 

@@ -7,6 +7,7 @@ export default {
     resolution: { x: 16, y: 16 },
     mouse: new Three.Vector2(0, 0),
     clicked: {
+      count: 0,
       intersects: [],
       position3D: new Vector3()
     },
@@ -38,8 +39,15 @@ export default {
 
     clicked(state, { intersects = [], position3D = {} }) {
       const { x, y, z } = position3D
-      state.clicked.position3D = new Vector3(x, y, z)
+      const position = new Vector3(x, y, z)
+
+      if (!state.clicked.position3D.equals(position)) {
+        state.clicked.count = 0
+      }
+      state.clicked.count++
+      state.clicked.position3D.copy(position)
       state.clicked.intersects = [...intersects]
+      
     },
 
     keyup(state, { code, location, key, which }) {
@@ -95,8 +103,10 @@ export default {
       const raycaster = rootState.art.raycaster
       const scene = rootState.art.scene
       const mouse = state.mouse
-      raycaster.setFromCamera(mouse.normalize(), camera)
-      const intersects = raycaster.intersectObjects(scene.children, true)
+      raycaster.setFromCamera(mouse, camera)
+      const intersects = raycaster.intersectObject(scene, true)
+
+      // console.log('action-event-clicked-intersects: ', intersects, position3D)
 
       commit('clicked', {
         intersects,

@@ -21,7 +21,6 @@ var stats = new Stats()
 stats.dom.style.position = 'fixed'
 stats.dom.style.bottom = 0
 stats.dom.style.top = 'initial'
-console.log(stats.dom)
 document.body.appendChild(stats.dom)
 
 light.position.set(0, 3, 0)
@@ -32,7 +31,7 @@ scene.add(light)
 controls.mouseButtons.LEFT = null
 controls.mouseButtons.RIGHT = THREE.MOUSE.PAN
 // scene.add(cursor3D)
-scene.add(grid)
+// scene.add(grid)
 
 perspectiveCamera.position.y = 5
 perspectiveCamera.lookAt(grid)

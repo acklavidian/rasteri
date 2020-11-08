@@ -1,63 +1,66 @@
 import store from '../../store'
-import { EventDispatcher, Object3D, Vector2 } from 'three'
+import { EventDispatcher, Object3D, Vector2, Raycaster } from 'three'
+
 
 export default class ToolBuilder extends Object3D {
   #nextQueue = []
+  #cache = {
+    intersections: null
+  }
   isReady = false
   action = null
 
-  constructor(...args) {
-    super(...args)
-    this.subscription = store.subscribeAction(this.delegateAction.bind(this))
+  subscription = this.subscribe.bind(this)
+
+  subscribe () {
+    this.subscription = store.subscribeAction(this.#update.bind(this))
   }
 
-  delegateAction(action, state) {
-    const isAction = this.isAction.bind(this)
-    const GLOBAL = true
+  #update = (action, state) => {
+    console.log(action, state)
     this.action = action
+    this.#clearCache()
 
     const options = {
-      preventUpdate: false
+      isPreventUpdate: false,
     }
 
-    //need to call delegate action on update
-    this.#nextQueue = this.#nextQueue.filter(queued => {
-      const { data, callback } = queued
-      const isQueuedAction = action.type === queued.action.type
 
-      if (isQueuedAction) {
-        // why isn't onNext callback firing
-        console.log('queue callback:')
-        callback(data).bind(this)
-      }
-
-      return !isQueuedAction
-    })
+    this.#processNextQueue()
+    this.#delegateAction(action, state, options)
 
     if (!this.isReady) {
-      this.ready(state, action)
       this.isReady = true
+      options.isPreventUpdate = true
+      return this.ready(state, action, options)
     }
+
+    if (!options.isPreventUpdate) {
+      this.update(state, action, options)
+    }
+  }
+
+  #delegateAction = (action, state, options) => {
+    const isAction = this.isAction.bind(this)
+    const GLOBAL = true
 
     // local handlers
     if (isAction('clicked')) {
       this.onClicked(state, action, options)
-    } else if (isAction('move')) {
+    } else if (isAction('mouse')) {
       this.onMouseOver(state, action, options)
     }
 
     //Global handelers
     if (isAction('clicked', GLOBAL)) {
       this.onClick(state, action, options)
-    } else if (isAction('move', GLOBAL)) {
+    } else if (isAction('mouse', GLOBAL)) {
       this.onMouseMove(state, action, options)
     } else if (isAction('keydown', GLOBAL)) {
       this.onKeyDown(state, action, options)
     } else if (isAction('keyup', GLOBAL)) {
       this.onKeyUp(state, action, options)
     }
-
-    this.update(state, action, options)
   }
 
   isAction(eventAction, isGlobal = false) {
@@ -69,37 +72,61 @@ export default class ToolBuilder extends Object3D {
     return isAction && (isThis || isGlobal)
   }
 
-  get isMouseOver() {
-    return this.intersections.some(i => this.getObjectById(i.object.id))
+  #processNextQueue = action => {
+    console.log('this', this)
+    this.#nextQueue = this.#nextQueue.filter(queued => {
+      const { data, callback } = queued
+      const isQueuedAction = action.type === queued.action
+
+      if (isQueuedAction) {
+        callback(data)
+      }
+      return !isQueuedAction
+    })
   }
 
+  #clearCache = () => {
+    Object.keys(this.#cache).forEach(i => this.#cache[i] = null)
+  } 
+
   onNext(action, callback, data) {
-    const isUnique = this.#nextQueue.every(queued => {
+    const isAllUnique = this.#nextQueue.every(queued => {
       const isUnique = {
         callback: queued.callback.toString() !== callback.toString(),
-        action: queued.action.type !== action.type
+        action: queued.action !== action
       }
 
       const r = isUnique.callback || isUnique.action
-      console.log('is uniq: ', isUnique, action.type, queued.action.type)
       return r
     }, this)
 
-    console.log('on next dup: ', isUnique, this.#nextQueue.length)
-
-    if (isUnique) {
-      console.log('inserting to next queue')
+    if (isAllUnique) {
+      console.log('inserting in to next queue')
       this.#nextQueue.push({
         action,
         callback,
         data
       })
+    } else {
+      console.log('blocking duplicate onNext action registration [ ', action, ' ] ' )
     }
   }
 
+  get isMouseOver () {
+    return this.intersections.length > 0
+  }
+  
   get intersections() {
+    if (this.#cache.intersections === null) {
+      this.#cache.intersections = this.cursorRay.intersectObject(this, true)
+    } 
+
+    return this.#cache.intersections
+  }
+
+  get cursorRay() {
     const camera = store.getters['art/camera']
-    const raycaster = store.state.art.raycaster
+    const raycaster = new Raycaster()
     const mouse = store.state.event.mouse
 
     const vector = new Vector2(
@@ -108,7 +135,7 @@ export default class ToolBuilder extends Object3D {
     )
 
     raycaster.setFromCamera(vector, camera)
-    return raycaster.intersectObjects(this.children, true)
+    return raycaster
   }
 
   ready() {}
