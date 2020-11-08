@@ -1,5 +1,5 @@
 <template>
-  <div :class="['tool-panel', { disabled: isLocked }]">
+  <div :class="['tool-panel', { disabled: false }]">
     <div @click="buildTriangle" class="tool">
       <blender-icon :row="'X'" :col="5" />
     </div>

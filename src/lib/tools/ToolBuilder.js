@@ -17,7 +17,6 @@ export default class ToolBuilder extends Object3D {
   }
 
   #update = (action, state) => {
-    console.log(action, state)
     this.action = action
     this.#clearCache()
 
@@ -73,7 +72,6 @@ export default class ToolBuilder extends Object3D {
   }
 
   #processNextQueue = action => {
-    console.log('this', this)
     this.#nextQueue = this.#nextQueue.filter(queued => {
       const { data, callback } = queued
       const isQueuedAction = action.type === queued.action

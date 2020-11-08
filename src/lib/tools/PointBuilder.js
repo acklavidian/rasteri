@@ -32,28 +32,20 @@ export default class PointBuilder extends ToolBuilder {
     this.add(this.helpers)
   }
   
-  ready(state){
-    console.log('ready', state.art.scene)
-  }
-
-  onMouseMove() {
-    console.log('moving da mouse')
-    if(this.isEditable) {
-      // this.position.copy(store.)
+  update() {
+    if (this.isComplete) {
+      store.dispatch('brush/isLocked', false)
     }
   }
 
-  onMouseOver() {
-    console.log('mousing over')
-  }
-
-  onClick(a) {
-    console.log('clicked something', a)
-  }
-
-  onClicked() {
+  onClicked(){
     this.isEditable = !this.isEditable
-    console.log('onClicked Hit!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+  }
+
+  onMouseMove() {
+    if(this.isEditable) {
+      this.position.copy(store.getters['event/mouse3D']())
+    }
   }
 
   setPoint(x, y, z) {
