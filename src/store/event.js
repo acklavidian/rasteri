@@ -1,11 +1,12 @@
 import * as Three from 'three'
-import { Vector3 } from 'three'
+import { Vector3, Vector2 } from 'three'
 
 export default {
   namespaced: true,
   state: {
     resolution: { x: 16, y: 16 },
     mouse: new Three.Vector2(0, 0),
+    intersects: [],
     clicked: {
       count: 0,
       intersects: [],
@@ -33,8 +34,14 @@ export default {
       state.resolution.y = state.isRatioLocked ? x : y
     },
 
+    intersects(state, intersects = []) {
+      state.intersects = [
+        ...intersects
+      ]
+    },
+
     mouse(state, { x, y }) {
-      state.mouse = new Three.Vector2(x, y)
+      state.mouse = new Vector2(x, y)
     },
 
     clicked(state, { intersects = [], position3D = {} }) {
@@ -85,7 +92,20 @@ export default {
       commit('resolution', { x, y })
     },
 
-    mouse({ commit }, { x, y }) {
+    mouse({ commit, rootGetters, rootState, state, getters }, { x, y }) {
+      const position3D = getters['mouse3D']()
+      const camera = rootGetters['art/camera']
+      const raycaster = rootState.art.raycaster
+      const scene = rootState.art.scene
+      const mouse = state.mouse
+      const vector = new Vector2(
+        (mouse.x / window.innerWidth) * 2 - 1,
+        -(mouse.y / window.innerHeight) * 2 + 1
+      )
+      raycaster.setFromCamera(vector, camera)
+      const intersects = raycaster.intersectObject(scene, true)
+      console.log('intersects', intersects)
+      commit('intersects', intersects)
       commit('mouse', { x, y })
     },
 
@@ -99,19 +119,8 @@ export default {
 
     clicked({ state, rootState, commit, getters, rootGetters }) {
       const position3D = getters['mouse3D']()
-      const camera = rootGetters['art/camera']
-      const raycaster = rootState.art.raycaster
-      const scene = rootState.art.scene
-      const mouse = state.mouse
-      raycaster.setFromCamera(mouse, camera)
-      const intersects = raycaster.intersectObject(scene, true)
 
-      // console.log('action-event-clicked-intersects: ', intersects, position3D)
-
-      commit('clicked', {
-        intersects,
-        position3D
-      })
+      commit('clicked', position3D)
     }
   }
 }

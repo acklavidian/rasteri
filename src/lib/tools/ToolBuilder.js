@@ -5,15 +5,18 @@ import { EventDispatcher, Object3D, Vector2, Raycaster } from 'three'
 export default class ToolBuilder extends Object3D {
   #nextQueue = []
   #cache = {
-    intersections: null
+    intersects: null
   }
   isReady = false
   action = null
-
-  subscription = this.subscribe.bind(this)
-
+  
+  /*/
+   * uncomment to have all tools subscribe automatically
+   * subscription = this.subscribe.bind(this)
+  /*/
   subscribe () {
     this.subscription = store.subscribeAction(this.#update.bind(this))
+    return this
   }
 
   #update = (action, state) => {
@@ -62,15 +65,6 @@ export default class ToolBuilder extends Object3D {
     }
   }
 
-  isAction(eventAction, isGlobal = false) {
-    const isAction = 'event/' + eventAction === this.action.type
-    const isThis = this.intersections.some(i => {
-      return this.getObjectById(i.object.id)
-    })
-
-    return isAction && (isThis || isGlobal)
-  }
-
   #processNextQueue = action => {
     this.#nextQueue = this.#nextQueue.filter(queued => {
       const { data, callback } = queued
@@ -87,6 +81,15 @@ export default class ToolBuilder extends Object3D {
     Object.keys(this.#cache).forEach(i => this.#cache[i] = null)
   } 
 
+  isAction(eventAction, isGlobal = false) {
+    const isAction = 'event/' + eventAction === this.action.type
+    const isThis = this.intersects.some(i => {
+      return this.getObjectById(i.object.id)
+    })
+
+    return isAction && (isThis || isGlobal)
+  }
+  
   onNext(action, callback, data) {
     const isAllUnique = this.#nextQueue.every(queued => {
       const isUnique = {
@@ -111,15 +114,17 @@ export default class ToolBuilder extends Object3D {
   }
 
   get isMouseOver () {
-    return this.intersections.length > 0
+    return this.intersects.length > 0
   }
   
-  get intersections() {
-    if (this.#cache.intersections === null) {
-      this.#cache.intersections = this.cursorRay.intersectObject(this, true)
+  get intersects() {
+    if (this.#cache.intersects === null) {
+      this.#cache.intersects = store.state.event.intersects.filter(({ object }) => {
+        return this.getObjectById(object.id)
+      })
     } 
 
-    return this.#cache.intersections
+    return this.#cache.intersects
   }
 
   get cursorRay() {

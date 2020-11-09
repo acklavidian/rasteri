@@ -29,5 +29,5 @@ window.addEventListener(
   },
   true
 )
-store.subscribeAction(debounce(Rasteri.update, 1000 / 30, { maxWait: 35 }))
+store.subscribeAction(debounce(Rasteri.update, 1000 / 30, { maxWait: 1 }))
 setInterval(Rasteri.update, 1000)
