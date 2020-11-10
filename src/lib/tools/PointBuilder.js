@@ -7,7 +7,7 @@ import {
   Vector3
 } from 'three'
 import ToolBuilder from './ToolBuilder'
-import BALL_PNG from '../../assets/ball.png'
+import BALL_PNG from '../../assets/sun.png'
 import store from '../../store'
 
 const ballTexture = new TextureLoader().load(BALL_PNG)

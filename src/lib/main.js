@@ -3,6 +3,8 @@ import * as THREE from 'three'
 import store from '../store'
 import { MapControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'three/examples/jsm/libs/stats.module'
+import LightBuilder from './tools/LightBuilder'
+import { Sprite, SpriteMaterial, TextureLoader } from 'three'
 
 var geometry = new THREE.CircleGeometry()
 var material = new THREE.MeshBasicMaterial({ wireframe: true, color: 0x999999 })
@@ -15,7 +17,8 @@ var orthographicCamera = store.state.art.orthographicCamera
 var renderer = store.state.art.renderer
 var controls = new MapControls(camera, renderer.domElement)
 var light = new THREE.PointLight(0xffffff, 1, 10)
-var sphere = new THREE.SphereBufferGeometry(0.5, 16, 8)
+var point = new LightBuilder(1, 1, 1).subscribe()
+
 var stats = new Stats()
 
 stats.dom.style.position = 'fixed'
@@ -23,11 +26,9 @@ stats.dom.style.bottom = 0
 stats.dom.style.top = 'initial'
 document.body.appendChild(stats.dom)
 
-light.position.set(0, 3, 0)
-light.add(
-  new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: 0xffaa00 }))
-)
-scene.add(light)
+
+point.position.set(0, 3, 0)
+scene.add(point)
 controls.mouseButtons.LEFT = null
 controls.mouseButtons.RIGHT = THREE.MOUSE.PAN
 // scene.add(cursor3D)
