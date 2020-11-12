@@ -7,7 +7,7 @@ import {
   Vector3
 } from 'three'
 import ToolBuilder from './ToolBuilder'
-import BALL_PNG from '../../assets/sun.png'
+import BALL_PNG from '../../assets/ball.png'
 import store from '../../store'
 
 const ballTexture = new TextureLoader().load(BALL_PNG)
@@ -16,7 +16,7 @@ const ballMaterial = new SpriteMaterial({ map: ballTexture })
 export default class PointBuilder extends ToolBuilder {
   geometry = new Geometry()
   helpers = new Group()
-  sprite = new Sprite(ballMaterial)
+  #sprite = new Sprite(ballMaterial)
   isEditable = true
 
   constructor(x, y, z) {
@@ -38,12 +38,12 @@ export default class PointBuilder extends ToolBuilder {
     }
   }
 
-  onClicked(){
+  onClicked() {
     this.isEditable = !this.isEditable
   }
 
   onMouseMove() {
-    if(this.isEditable) {
+    if (this.isEditable) {
       this.position.copy(store.getters['event/mouse3D']())
     }
   }
@@ -56,5 +56,13 @@ export default class PointBuilder extends ToolBuilder {
 
   get isComplete() {
     return this.geometry.vertices.length > 0
+  }
+
+  set sprite(value) {
+    this.#sprite.copy(value)
+  }
+
+  get sprite() {
+    return this.#sprite
   }
 }

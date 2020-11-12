@@ -6,8 +6,8 @@ import {
   TextureLoader,
   Vector3
 } from 'three'
-import PointBuilder from './PointBuilder'
 import SUN_PNG from '../../assets/sun.png'
+import PointBuilder from './PointBuilder'
 
 var sunTexture = new TextureLoader().load(SUN_PNG)
 var sunMaterial = new SpriteMaterial({ map: sunTexture })
@@ -15,22 +15,29 @@ var sunMaterial = new SpriteMaterial({ map: sunTexture })
 export default class LightBuilder extends PointBuilder {
   geometry = new Geometry()
   helpers = new Group()
-  sprite = new Sprite(sunMaterial)
   isEditable = false
 
   constructor(){
     super()
-    console.log('green', SUN_PNG)
+    this.sprite = new Sprite(sunMaterial)
   }
 
-  onClicked(){
-    this.isEditable = !this.isEditable
+  onKeyDown({ payload: { key } }) {
+    if (key === 'r') {
+      this.isEditable = true 
+    }
   }
 
-  onMouseMove(store) {
+  onKeyUp({ payload: { key }}) {
+    if (key === 'r') {
+      this.isEditable = false
+    }
+  }
+
+  onMouseMove() {
     if(this.isEditable) {
-      console.log('mouse3', store)
-      this.position.copy(store.getters['event/mouse3D']())
+      console.log('mouse3', this.store)
+      this.position.copy(this.store.getters['event/mouse3D']())
     }
   }
 

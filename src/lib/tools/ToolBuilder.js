@@ -19,49 +19,51 @@ export default class ToolBuilder extends Object3D {
     return this
   }
 
-  #update = (action, state) => {
-    this.action = action
-    this.#clearCache()
-
+  #update = (action) => {
     const options = {
       isPreventUpdate: false,
     }
 
+    const args = [action, store, options]
+    this.action = action
+    this.store = store
 
+    this.#clearCache()
     this.#processNextQueue()
-    this.#delegateAction(action, state, options)
+    this.#delegateAction(...args)
 
     if (!this.isReady) {
       this.isReady = true
       options.isPreventUpdate = true
-      return this.ready(state, action, options)
+      return this.ready(...args)
     }
 
     if (!options.isPreventUpdate) {
-      this.update(state, action, options)
+      this.update(...args)
     }
   }
 
-  #delegateAction = (action, state, options) => {
+  #delegateAction = (action, store, options) => {
     const isAction = this.isAction.bind(this)
     const GLOBAL = true
 
+    const handlerArgs = [action, store, options]
     // local handlers
     if (isAction('clicked')) {
-      this.onClicked(state, action, options)
+      this.onClicked(...handlerArgs)
     } else if (isAction('mouse')) {
-      this.onMouseOver(state, action, options)
+      this.onMouseOver(...handlerArgs)
     }
 
     //Global handelers
     if (isAction('clicked', GLOBAL)) {
-      this.onClick(state, action, options)
+      this.onClick(...handlerArgs)
     } else if (isAction('mouse', GLOBAL)) {
-      this.onMouseMove(state, action, options)
+      this.onMouseMove(...handlerArgs)
     } else if (isAction('keydown', GLOBAL)) {
-      this.onKeyDown(state, action, options)
+      this.onKeyDown(...handlerArgs)
     } else if (isAction('keyup', GLOBAL)) {
-      this.onKeyUp(state, action, options)
+      this.onKeyUp(...handlerArgs)
     }
   }
 
