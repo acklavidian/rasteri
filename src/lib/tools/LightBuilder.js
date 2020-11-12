@@ -36,7 +36,6 @@ export default class LightBuilder extends PointBuilder {
 
   onMouseMove() {
     if(this.isEditable) {
-      console.log('mouse3', this.store)
       this.position.copy(this.store.getters['event/mouse3D']())
     }
   }
