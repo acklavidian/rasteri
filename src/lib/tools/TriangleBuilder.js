@@ -96,10 +96,6 @@ export default class TriangleBuilder extends ToolBuilder {
     const geometry = this.geometry
     const mesh = new Mesh(geometry, meshMaterial)
 
-
-
-
-
     if (this.mesh === null) {
       this.mesh = mesh
       this.add(this.mesh)

@@ -18,6 +18,7 @@ export default {
       1000
     ),
     orthographicCamera: new OrthographicCamera(0, 1, 0, 1),
+    pixelShader: false,
     resolution: { x: 16, y: 16 },
     zoom: 10,
     isRatioLocked: true,
@@ -32,6 +33,10 @@ export default {
   mutations: {
     zoom(state, z = 0) {
       state.zoom = z
+    },
+
+    pixelShader(state, value) {
+      state.pixelShader = Boolean(value)
     },
 
     resolution(state, { x, y }) {
@@ -80,6 +85,10 @@ export default {
 
     isOrtho({ commit }, value) {
       commit('isOrtho', value)
+    },
+
+    pixelShader({ commit }, value) {
+      commit('pixelShader', value)
     }
   }
 }

@@ -20,6 +20,12 @@
           Ratio Lock
           <input v-model="isRatioLocked" type="checkbox" />
         </label>
+      </div>      
+      <div class="combo-input">
+        <label>
+          Pixel Shader
+          <input v-model="pixelShader" type="checkbox" />
+        </label>
       </div>
       <div class="combo-input">
         <label>
@@ -74,7 +80,7 @@ export default {
 
   computed: {
     ...mapState(['resolution', 'offset']),
-    ...accessors.art(['zoom', 'isRatioLocked', 'isOrtho']),
+    ...accessors.art(['zoom', 'isRatioLocked', 'isOrtho', 'pixelShader']),
     ...accessors.brush(['color', 'depth', 'mode']),
     ...accessors.event(['mouse']),
 

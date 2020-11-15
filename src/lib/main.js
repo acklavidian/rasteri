@@ -6,6 +6,11 @@ import Stats from 'three/examples/jsm/libs/stats.module'
 import LightBuilder from './tools/LightBuilder'
 import { Sprite, SpriteMaterial, TextureLoader } from 'three'
 
+import { PixelShader } from 'three/examples/jsm/shaders/PixelShader'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+
 var geometry = new THREE.CircleGeometry()
 var material = new THREE.MeshBasicMaterial({ wireframe: true, color: 0x999999 })
 var cursor3D = new THREE.Mesh(geometry, material)
@@ -16,10 +21,10 @@ var perspectiveCamera = store.state.art.perspectiveCamera
 var orthographicCamera = store.state.art.orthographicCamera
 var renderer = store.state.art.renderer
 var controls = new MapControls(camera, renderer.domElement)
-var light = new THREE.PointLight(0xffffff, 1, 10)
-var point = new LightBuilder(1, 1, 1).subscribe()
 
+var point = new LightBuilder(1, 1, 1).subscribe()
 var stats = new Stats()
+
 
 stats.dom.style.position = 'fixed'
 stats.dom.style.bottom = 0
@@ -48,27 +53,79 @@ renderer.setPixelRatio(window.devicePixelRatio)
 
 cursor3D.rotation.x = -1.5
 
+var composer = new EffectComposer( renderer )
+composer.addPass( new RenderPass( scene, camera ) )
+var pixelPass = new ShaderPass( PixelShader )
+pixelPass.uniforms[ "resolution" ].value = new THREE.Vector2( window.innerWidth, window.innerHeight )
+pixelPass.uniforms[ "resolution" ].value.multiplyScalar( window.devicePixelRatio )
+pixelPass.uniforms[ "pixelSize" ].value = 4
+composer.addPass( pixelPass )
+
 export function onWindowResize() {
   var width = window.innerWidth
   var height = window.innerHeight
   camera.aspect = width / height
   camera.updateProjectionMatrix()
   renderer.setSize(window.innerWidth, window.innerHeight)
+  pixelPass.uniforms[ "resolution" ].value
+    .set( window.innerWidth, window.innerHeight )
+    .multiplyScalar( window.devicePixelRatio )
+
 }
 
 export function update() {
+  const isPixelShader = store.state.art.pixelShader
+  const size = store.state.art.resolution.x
+  pixelPass.uniforms[ "pixelSize" ].value = size
   camera = store.getters['art/camera']
-  
   controls.update()
 
   cursor3D.position.copy(store.getters['event/mouse3D']())
 
   // group.rotation.x += 0.01
   // group.rotation.y += 0.01
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   cursor3D.position.x = Math.round(cursor3D.position.x)
   cursor3D.position.y = Math.round(cursor3D.position.y)
   cursor3D.position.z = Math.round(cursor3D.position.z)
-  window.requestAnimationFrame(() => renderer.render(scene, camera))
+  window.requestAnimationFrame(() => (isPixelShader ? composer:renderer).render(scene, camera))
   stats.update()
 }
 /* eslint-enable */
