@@ -1,8 +1,8 @@
 <template>
   <div :class="['tool-panel', { disabled: false }]">
-    <!-- <div @click="buildTriangle" class="tool">
+    <div @click="buildTriangle" class="tool">
       <blender-icon :row="'X'" :col="5" />
-    </div> -->
+    </div>
     <div @click="buildPoint" class="tool">
       <blender-icon :row="'K'" :col="1" />
     </div>
@@ -30,7 +30,9 @@ export default {
 
   methods: {
     buildTriangle() {
-      // this.$nextTick(() => this.scene.add(new TriangleBuilder()))
+      const triangle = new TriangleBuilder()
+      triangle.subscribe()
+      this.scene.add(triangle)
     },
 
     buildPoint() {

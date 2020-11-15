@@ -1,6 +1,7 @@
 import {
   Geometry,
   Group,
+  PointLight,
   Sprite,
   SpriteMaterial,
   TextureLoader,
@@ -19,12 +20,14 @@ export default class LightBuilder extends PointBuilder {
 
   constructor(){
     super()
+    this.light = new PointLight(0xffffff, 1.5, 20)
+    this.add(this.light)
     this.sprite = new Sprite(sunMaterial)
   }
 
   onKeyDown({ payload: { key } }) {
     if (key === 'r') {
-      this.isEditable = true 
+      this.isEditable = true
     }
   }
 
@@ -36,7 +39,8 @@ export default class LightBuilder extends PointBuilder {
 
   onMouseMove() {
     if(this.isEditable) {
-      this.position.copy(this.store.getters['event/mouse3D']())
+      const targetZ = this.position.y || 1
+      this.position.copy(this.store.getters['event/mouse3D'](targetZ))
     }
   }
 
