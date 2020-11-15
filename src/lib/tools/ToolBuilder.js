@@ -1,12 +1,13 @@
 import store from '../../store'
 import { EventDispatcher, Object3D, Vector2, Raycaster } from 'three'
+import AbstractBuilder from './AbstractBuilder'
 
-
-export default class ToolBuilder extends Object3D {
+export default class ToolBuilder extends AbstractBuilder {
   #nextQueue = []
   #cache = {
     intersects: null
   }
+  
   isReady = false
   action = null
   
@@ -82,6 +83,11 @@ export default class ToolBuilder extends Object3D {
   #clearCache = () => {
     Object.keys(this.#cache).forEach(i => this.#cache[i] = null)
   } 
+  
+  set cache(value) {
+    console.log('hit da cache: ', value)
+    Object.assign(this.#cache, value)
+  }
 
   isAction(eventAction, isGlobal = false) {
     const isAction = 'event/' + eventAction === this.action.type
@@ -142,13 +148,4 @@ export default class ToolBuilder extends Object3D {
     raycaster.setFromCamera(vector, camera)
     return raycaster
   }
-
-  ready() {}
-  update() {}
-  onClick() {}
-  onClicked() {}
-  onMouseMove() {}
-  onMouseOver() {}
-  onKeyDown() {}
-  onKeyUp() {}
 }

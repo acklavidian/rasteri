@@ -25,164 +25,113 @@ import {
   Color
 } from 'three'
 import ToolBuilder from './ToolBuilder'
-import store from '../../store'
+import PointBuilder from './PointBuilder'
+
 /* eslint-enable */
 
-export default class TriangleBuilder extends ToolBuilder {
-  #coordinates = []
-  helpers = new Group()
-  edges = new Group()
-  isEditable = true
-  selected = null
-  line = null
-  face = null
-  color = new Color().copy(store.state.brush.color)
+const lineMaterial = new LineBasicMaterial({
+  color: 0x0000ff
+})
 
-  constructor() {
+const meshMaterial = new MeshStandardMaterial({
+  color: 0x00ff00
+})
+
+export default class TriangleBuilder extends ToolBuilder {
+  #points = []
+  helpers = new Group()
+  line = null
+  mesh = null
+
+  constructor(){
     super()
-    store.dispatch('brush/isLocked', true)
+    console.log('const:', this.cache)
     this.add(this.helpers)
-    this.add(this.edges)
   }
 
   update() {
-    const [one, two, three] = this.helpers.children.map(i => {
-      
-      if (this.selected === i) {
-        i.material.color.set(0x00ffff)
-      } else {
-        i.material.color.set(0x00ff00)
-      }
-      return i.position
-    })
-
     if (this.isComplete) {
-      this.computeEdges([one, two, three])
-      this.computeFace([one, two, three])
-      store.dispatch('brush/isLocked', false)
+      this.drawFace()
+      this.drawLine()
     }
   }
 
   onClick() {
-    const mouse3D = store.getters['art/mouse3D']()
-    const a = this.intersections
-    // debugger // eslint-disable-line
-    /* to-do:
-     * break this up. put conditions in functions.
-     * reorganize responsibilities and order.
-     * re-evaluate conditional "flow" <->___<-> . try to reduce complexity.
-     * remove #coordinate, replace with geometry.vertices temmplate
-     */
-    const clickedHelper = this.intersections.find(i => {
-      const j = this.helpers.children.includes(i.object)
-      console.log('intersection of:', i.object, 'in', this.helpers.children, j)
-      return j
-    })?.object
-    const [{ object: clicked } = {}] = a
-    const clickedFace = this.intersections.find(i => i.object === this.face)
-    if (clickedFace) {
-      console.log('clicked face')
-      this.isEditable = !this.isEditable
-      this.helpers.visible = !this.helpers.visible
-      this.edges.visible = !this.edges.visible
-      this.selected = null
-      store.dispatch('brush/color', this.color)
-    } else if (this.isComplete && this.isEditable) {
-      if (clickedHelper) {
-        console.log('clicked helper: ', clickedHelper)
-        this.selected = this.selected === clickedHelper ? null : clickedHelper
+    if (!this.isComplete) {
+      const mouse3D = this.store.getters['event/mouse3D']()
+      this.addPoint(mouse3D)
+    }
+  }
 
-        clickedHelper?.material.color.set(
-          this.selected === null ? 0x003399 : 0x8800ff
-        )
-      } else {
-        //clicked off
-        this.selected = null
-        clicked?.material.color.set(0x00ffff)
-        console.log('clicked off')
+  onClicked() {
+    if (this.isComplete) {
+      let isMesh = false
+      const isHelper = this.intersects.some(({ object: i })=> {
+        if (i.id === this.mesh.id) {
+          isMesh = true
+        }
+        return this.helpers.getObjectById(i.id)
+      })
+      console.log('boop gone?', )
+      if (isMesh && !isHelper) {
+        this.helpers.visible = !this.helpers.visible
       }
-    } else if (this.#coordinates.length < 3) {
-      this.addCoordinate(mouse3D)
     }
   }
 
   get isComplete() {
-    return this.#coordinates.length > 2
+    return this.points.length >= 3
   }
 
-  computeFace([one, two, three]) {
-    const material = new MeshStandardMaterial({
-      color: this.color,
-      side: DoubleSide
-    })
-    const geometry = new Geometry().setFromPoints([one, two, three])
-    const normal = new Vector3(0, 0, 0)
+  addPoint({ x, y, z }) {
+    const point = new PointBuilder(x, y, z).subscribe()
+    this.#points.push(point)
+    this.helpers.add(point)
+  }
 
-    if (this.face?.geometry) {
-      this.face.geometry.dispose()
-      this.remove(this.face)
+  drawFace() {
+    const color = new Color(0xffaa00)
+    const normal = new Vector3(0, 0, 1)
+    const face = new Face3(0, 1, 2, normal, color, 0)
+    const geometry = this.geometry
+    const mesh = new Mesh(geometry, meshMaterial)
+
+
+
+
+
+    if (this.mesh === null) {
+      this.mesh = mesh
+      this.add(this.mesh)
     }
 
-    geometry.faces.push(new Face3(0, 1, 2, normal))
-    this.face = new Mesh(geometry, material)
+    geometry.faces.push(face)
     geometry.computeFaceNormals()
-    this.add(this.face)
+    geometry.computeVertexNormals()
+
+    this.mesh.copy(mesh)
   }
+  
+  drawLine() {
+    const line = new LineLoop(this.geometry, lineMaterial)
 
-  computeEdges([one, two, three]) {
-    const material = new LineBasicMaterial({ color: 0x0ff0ff, linewidth: 30 })
-    const geometry = new Geometry().setFromPoints([one, two, three])
-
-    if (this.line?.geometry) {
-      this.line.geometry.dispose()
-      this.edges.remove(this.line)
+    if (this.line === null) {
+      this.line = line
+      this.helpers.add(this.line)
     }
 
-    this.line = new LineLoop(geometry, material)
-    this.line.renderOrder = 1
-    this.line.material.depthTest = false
-    this.edges.add(this.line)
+    this.line.copy(line)
   }
 
-  addCoordinate({ x, y, z }) {
-    const geometry = new CircleGeometry(0.5, 20)
-    const material = new MeshBasicMaterial({ color: 0x00fffff })
-    const marker = new Mesh(geometry, material)
-    material.depthTest = false
-    marker.renderOrder = 2
-    marker.position.copy(new Vector3(Math.round(x), 0, Math.round(z)))
-    marker.lookAt(new Vector3(x, 1, z))
-    this.helpers.add(marker)
-    this.#coordinates.push(marker)
+  get points () {
+    return this.#points.map(({ position }) => position )
   }
 
-  onMouseMove() {
-    if (this.selected) {
-      const { y } = this.selected.position
-      const { x, z } = store.getters['art/mouse3D']()
-      const position = new Vector3(Math.round(x), Math.round(y), Math.round(z))
-      this.selected.position.copy(position)
-    }
-  }
-
-  onKeyDown(state) {
-    const { key } = state.art.keydown
-    const [{ object = null } = {}] = this.intersections
-
-    console.log('keydown', state.art.keydown)
-
-    if (this.isEditable) {
-      if (key === 'u' && this.selected) {
-        this.selected.position.y += 1
-      }
-
-      if (key === 'd' && this.selected) {
-        this.selected.position.y -= 1
-      }
-
-      if (key === 'Enter' && this.selected) {
-        this.selected = null
-      }
-    }
+  get geometry () {
+    // if (!(this.#cache.geometry instanceof Geometry)) {
+    //   this.#cache.geometry = new Geometry().setFromPoints(this.points)
+    // }
+    // return this.#cache.geometry
+    return new Geometry().setFromPoints(this.points)
   }
 }

@@ -104,7 +104,6 @@ export default {
       )
       raycaster.setFromCamera(vector, camera)
       const intersects = raycaster.intersectObject(scene, true)
-      console.log('intersects', intersects)
       commit('intersects', intersects)
       commit('mouse', { x, y })
     },
@@ -119,7 +118,6 @@ export default {
 
     clicked({ state, rootState, commit, getters, rootGetters }) {
       const position3D = getters['mouse3D']()
-
       commit('clicked', position3D)
     }
   }
