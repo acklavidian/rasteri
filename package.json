@@ -10,6 +10,7 @@
   "dependencies": {
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/plugin-proposal-private-methods": "^7.10.4",
+    "blender-icons": "^0.1.0",
     "core-js": "^3.6.5",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",

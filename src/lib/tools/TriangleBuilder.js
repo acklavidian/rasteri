@@ -1,40 +1,23 @@
 /* eslint-disable */
 import {
   Geometry,
-  BufferGeometry,
   Face3,
   Vector3,
-  Vector2,
   LineBasicMaterial,
-  MeshNormalMaterial,
-  MeshBasicMaterial,
   MeshStandardMaterial,
   Mesh,
-  Line,
   Group,
-  Points,
-  Object3D,
-  PointsMaterial,
-  TextureLoader,
-  Scene,
-  CircleGeometry,
-  VectorKeyframeTrack,
   LineLoop,
-  Side,
-  DoubleSide,
-  Color
 } from 'three'
 import ToolBuilder from './ToolBuilder'
 import PointBuilder from './PointBuilder'
-
-/* eslint-enable */
 
 const lineMaterial = new LineBasicMaterial({
   color: 0x0000ff
 })
 
 const meshMaterial = new MeshStandardMaterial({
-  color: 0x00ff00
+  vertexColors: true
 })
 
 export default class TriangleBuilder extends ToolBuilder {
@@ -42,10 +25,9 @@ export default class TriangleBuilder extends ToolBuilder {
   helpers = new Group()
   line = null
   mesh = null
-
+  
   constructor(){
     super()
-    console.log('const:', this.cache)
     this.add(this.helpers)
   }
 
@@ -72,7 +54,7 @@ export default class TriangleBuilder extends ToolBuilder {
         }
         return this.helpers.getObjectById(i.id)
       })
-      console.log('boop gone?', )
+
       if (isMesh && !isHelper) {
         this.helpers.visible = !this.helpers.visible
       }
@@ -89,10 +71,9 @@ export default class TriangleBuilder extends ToolBuilder {
     this.helpers.add(point)
   }
 
-  drawFace() {
-    const color = new Color(0xffaa00)
+  drawFace() { 
     const normal = new Vector3(0, 0, 1)
-    const face = new Face3(0, 1, 2, normal, color, 0)
+    const face = new Face3(0, 1, 2, normal, this.colors)
     const geometry = this.geometry
     const mesh = new Mesh(geometry, meshMaterial)
 
@@ -120,14 +101,14 @@ export default class TriangleBuilder extends ToolBuilder {
   }
 
   get points () {
-    return this.#points.map(({ position }) => position )
+    return this.#points.map(({ position }) => position)
   }
 
   get geometry () {
-    // if (!(this.#cache.geometry instanceof Geometry)) {
-    //   this.#cache.geometry = new Geometry().setFromPoints(this.points)
-    // }
-    // return this.#cache.geometry
     return new Geometry().setFromPoints(this.points)
+  }
+
+  get colors () {
+    return this.#points.map(({ color }) => color)
   }
 }
