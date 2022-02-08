@@ -8,15 +8,15 @@ import {
   Vector2,
   Vector3
 } from 'three'
-
+import { OverlayBuilder } from './OverlayBuilder'
 import ToolBuilder from './ToolBuilder'
 import BALL_PNG from '../../assets/ball.png'
 import store from '../../store'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
 
+
 const ballTexture = new TextureLoader().load(BALL_PNG)
 const ballMaterial = new SpriteMaterial({ map: ballTexture })
-
 
 export default class PointBuilder extends ToolBuilder {
   geometry = new Geometry()
@@ -24,7 +24,8 @@ export default class PointBuilder extends ToolBuilder {
   #sprite = new Sprite(ballMaterial)
   color = new Color()
   isEditable = true
-  label = new CSS2DObject()
+  label = new OverlayBuilder()
+  overlay = new CSS2DObject(this.label)
 
   constructor(x, y, z) {
     super()
@@ -35,7 +36,7 @@ export default class PointBuilder extends ToolBuilder {
       store.dispatch('brush/isLocked', true)
     }
 
-    this.helpers.add(this.label)
+    this.helpers.add(this.overlay)
     this.helpers.add(this.sprite)
     this.add(this.helpers)
   }
@@ -44,10 +45,11 @@ export default class PointBuilder extends ToolBuilder {
     // if (this.isComplete) {
     //   store.dispatch('brush/isLocked', false)
     // }
-
+    this.label.color = 'blue'
     if (this.isEditable) {
       this.color = store.state.brush.color
-    }
+      this.label.color = 'red'
+    } 
   }
 
   onClicked() {
@@ -56,8 +58,10 @@ export default class PointBuilder extends ToolBuilder {
 
   onMouseMove() {
     if (this.isEditable) {
+      const isDepthOn =  store.state.brush.isDepthOn
+      const depth = store.state.brush.depth
       const { x, z } = store.getters['event/mouse3D']()
-      const y = this.position.y
+      const y = isDepthOn ? depth : this.position.y
       this.position.copy({ x, y, z })
     }
   }

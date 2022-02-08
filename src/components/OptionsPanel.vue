@@ -51,6 +51,19 @@
           <input v-model="hexColor" type="color" />
         </label>
       </div>
+      <div class="combo-input">
+        <label>
+          Sprite:
+          <input v-model="isSprite" type="color" />
+        </label>
+      </div>
+      <div class="combo-input">
+        <label>
+          Depth:
+          <input v-model="isDepthOn" type="checkbox" />
+          <input v-model="depth" type="integer" />
+        </label>
+      </div>
     </div>
     <div class="row-footer">
       @[:x {{ mouse.x.toPrecision(10) }}px, y: {{ mouse.y.toPrecision(10) }}px]
@@ -81,7 +94,7 @@ export default {
   computed: {
     ...mapState(['resolution', 'offset']),
     ...accessors.art(['zoom', 'isRatioLocked', 'isOrtho', 'pixelShader']),
-    ...accessors.brush(['color', 'depth', 'mode']),
+    ...accessors.brush(['color', 'depth', 'mode', 'isDepthOn', 'isSprite', 'isColorOn']),
     ...accessors.event(['mouse']),
 
     hexColor: {

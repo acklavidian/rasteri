@@ -17,7 +17,7 @@ export default {
       0.1,
       1000
     ),
-    orthographicCamera: new OrthographicCamera(0, 1, 0, 1),
+    orthographicCamera: new OrthographicCamera(- 0.5, 0.5, 0.5, - 0.5, - 10000, 10000),
     pixelShader: false,
     resolution: { x: 16, y: 16 },
     zoom: 10,

@@ -31,7 +31,7 @@ stats.dom.style.position = 'fixed'
 stats.dom.style.bottom = 0
 stats.dom.style.top = 'initial'
 document.body.appendChild(stats.dom)
-css2DRenderer.setSize( window.innerWidth, window.innerHeight )
+css2DRenderer.setSize(window.innerWidth, window.innerHeight)
 css2DRenderer.domElement.style.position = 'absolute'
 css2DRenderer.domElement.style.top = '0px'
 css2DRenderer.domElement.style.pointerEvents = 'none'
@@ -41,14 +41,15 @@ point.position.set(0, 3, 0)
 scene.add(point)
 controls.mouseButtons.LEFT = null
 controls.mouseButtons.RIGHT = THREE.MOUSE.PAN
+controls.enableZoom = false
 // scene.add(cursor3D)
 // scene.add(grid)
 
 perspectiveCamera.position.y = 5
 perspectiveCamera.lookAt(grid)
-orthographicCamera.position.y = 5 
+orthographicCamera.position.y = 5
 orthographicCamera.lookAt(grid)
-
+orthographicCamera.rotation.y = Math.PI
 
 grid.position.y = -0.01
 renderer.setSize(window.innerWidth, window.innerHeight)
@@ -58,12 +59,12 @@ renderer.setPixelRatio(window.devicePixelRatio)
 
 cursor3D.rotation.x = -1.5
 
-var composer = new EffectComposer( renderer )
-composer.addPass( new RenderPass( scene, camera ) )
-var pixelPass = new ShaderPass( PixelShader )
-pixelPass.uniforms[ "resolution" ].value = new THREE.Vector2( window.innerWidth, window.innerHeight )
-pixelPass.uniforms[ "resolution" ].value.multiplyScalar( window.devicePixelRatio )
-pixelPass.uniforms[ "pixelSize" ].value = 4
+var composer = new EffectComposer(renderer)
+composer.addPass(new RenderPass(scene, camera))
+var pixelPass = new ShaderPass(PixelShader)
+pixelPass.uniforms["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight)
+pixelPass.uniforms["resolution"].value.multiplyScalar(window.devicePixelRatio)
+pixelPass.uniforms["pixelSize"].value = 4
 composer.addPass(pixelPass)
 
 export function onWindowResize() {
@@ -73,16 +74,16 @@ export function onWindowResize() {
   camera.updateProjectionMatrix()
   renderer.setSize(window.innerWidth, window.innerHeight)
   css2DRenderer.setSize(window.innerWidth, window.innerHeight)
-  pixelPass.uniforms[ "resolution" ].value
-    .set( window.innerWidth, window.innerHeight )
-    .multiplyScalar( window.devicePixelRatio )
+  pixelPass.uniforms["resolution"].value
+    .set(window.innerWidth, window.innerHeight)
+    .multiplyScalar(window.devicePixelRatio)
 
 }
 
 export function update() {
   const isPixelShader = store.state.art.pixelShader
   const size = store.state.art.resolution.x
-  pixelPass.uniforms[ "pixelSize" ].value = size
+  pixelPass.uniforms["pixelSize"].value = size
   camera = store.getters['art/camera']
   controls.update()
   cursor3D.position.copy(store.getters['event/mouse3D']())
@@ -99,28 +100,44 @@ export function update() {
 
 
 
-const mapSize = 16
-const pixelKern = 1
-const ray = new Raycaster()
+  const mapSize = 16
+  const pixelKern = 1
+  const ray = new Raycaster()
+  let output = ''
+
+  function hexNorm(...values) {
+    return '#' + values
+    .map(value => Math.floor(256 * value))
+    .map(value => value === 0 ? '00' : value.toString(16))
+    .join()
+  }
+
+  for (let x = 0; x <= mapSize; x++) {
+    const results = []
+    for (let y = 0; y <= mapSize; y++) {
+      const currentPosition = new THREE.Vector2(x, -y)
+      ray.setFromCamera(currentPosition.normalize(), camera)
+      const intersects = ray.intersectObjects(scene.children, true)
+      const hit = intersects.find(i => i.face)
+      
+      if (hit) {
+        const { x, y, z } = hit.face.normal
+        
+        const rgb = hexNorm(x, z, y)
+        console.log(rgb)
+        // console.log('%c 1 ' + rgb, `background: ${rgb}`)
+        results.push(1)//intersects[0].distance)
+      } else {
+        // console.log('no hit')
+        results.push(0)
+      }
 
 
 
-for (let x = 0; x <= mapSize; x++) {
-   for(let y = 0; y <= mapSize; y++) {
-     const currentPosition = new THREE.Vector2(x, y) 
-     ray.setFromCamera(currentPosition.normalize(), camera)
-     const intersects = ray.intersectObjects(scene.children, true)
-
-     const [{ face } = {}] = intersects
-     if (face) {
-     console.log(intersects[0], x, y)
-
-       const { x, y, z } = face.normal
-        console.log('hit a face', x, y, z)
-     }
-     
-   }
-}
+    }
+    output += results.join('') + '\n'
+  }
+  
 
 
 
@@ -151,10 +168,10 @@ for (let x = 0; x <= mapSize; x++) {
   cursor3D.position.z = Math.round(cursor3D.position.z)
 
   window.requestAnimationFrame(() => {
-    (isPixelShader ? composer:renderer).render(scene, camera)
+    (isPixelShader ? composer : renderer).render(scene, camera)
     css2DRenderer.render(scene, camera)
     stats.update()
   })
 }
 /* eslint-enable */
-function color(){}
+function color() { }

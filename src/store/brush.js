@@ -10,7 +10,8 @@ export default {
     color: new Color(0x000000),
     depth: 0,
     mode: null,
-    isLocked: false
+    isLocked: false,
+    isDepthOn: false
   },
 
   mutations: {
@@ -30,6 +31,10 @@ export default {
 
     isLocked(state, isLocked = false) {
       state.isLocked = isLocked
+    },
+
+    isDepthOn(state, isDepthOn = false) {
+      state.isDepthOn = isDepthOn
     },
 
     targets(state, targets = []) {
@@ -63,6 +68,10 @@ export default {
 
     isLocked({ commit }, isLocked) {
       commit('isLocked', isLocked)
+    },
+
+    isDepthOn({ commit }, isDepthOn) {
+      commit('isDepthOn', isDepthOn)
     },
 
     targets({ commit }, targets = []) {
