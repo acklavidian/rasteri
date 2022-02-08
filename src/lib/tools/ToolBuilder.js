@@ -32,7 +32,7 @@ export default class ToolBuilder extends AbstractBuilder {
     this.#clearCache()
     this.#processNextQueue()
     this.#delegateAction(...args)
-
+    // console.log('_update')
     if (!this.isReady) {
       this.isReady = true
       options.isPreventUpdate = true
@@ -95,6 +95,8 @@ export default class ToolBuilder extends AbstractBuilder {
       return this.getObjectById(i.object.id)
     })
 
+    // console.log('isThis', eventAction, isAction, '. ', 'isThis local', isThis, this.constructor.name)
+    
     return isAction && (isThis || isGlobal)
   }
   
@@ -127,9 +129,7 @@ export default class ToolBuilder extends AbstractBuilder {
   
   get intersects() {
     if (this.#cache.intersects === null) {
-      this.#cache.intersects = store.state.event.intersects.filter(({ object }) => {
-        return this.getObjectById(object.id)
-      })
+      this.#cache.intersects = store.state.event.intersects
     } 
 
     return this.#cache.intersects

@@ -24,10 +24,10 @@ window.addEventListener('click', () => dispatch('event/clicked'))
 window.addEventListener(
   'wheel',
   event => {
-    const zoom = store.state.event.zoom
+    const zoom = store.state.art.zoom
     dispatch('art/zoom', event.deltaY < 0 ? zoom + 10 : zoom - 10)
   },
-  true
+  false
 )
 store.subscribeAction(debounce(Rasteri.update, 1000 / 30, { maxWait: 1 }))
 setInterval(Rasteri.update, 1000)

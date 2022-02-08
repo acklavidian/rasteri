@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=2]
+
+[sub_resource type="SpatialMaterial" id=1]
+albedo_color = Color( 0.290196, 0.498039, 0.176471, 1 )
+
+[sub_resource type="SpatialMaterial" id=2]
+
+[node name="Spatial" type="Spatial"]
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0149001, 5.36315 )
+current = true
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( -0.114868, 0, -0.993381, 0, 1, 0, 0.993381, 0, -0.114868, -2.08042, 3.03222, 10.7504 )
+
+[node name="CSGBox" type="CSGBox" parent="."]
+transform = Transform( 0.689043, 0, 0.74376, 0.466235, 0.789944, -0.431935, -0.579486, 0.635563, 0.536854, -0.0796884, 0.0595595, -0.0715078 )
+operation = 1
+material = SubResource( 1 )
+
+[node name="CSGBox2" type="CSGBox" parent="CSGBox"]
+transform = Transform( 1, 0, -8.9407e-08, 5.96046e-08, 1, 0, 0, 2.98023e-08, 1, -0.642779, 1.25387, 0.598574 )
+operation = 2
+material = SubResource( 2 )
